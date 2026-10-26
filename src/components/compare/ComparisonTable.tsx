@@ -8,12 +8,15 @@ export function ComparisonTable({ scenarios }: { scenarios: Scenario[] }) {
   const t = useT()
   const lang = useLang()
   const age = (s: Scenario, months: number) => formatAge(toMonths(s.params.currentAge) + months, lang)
+  const money = (s: Scenario, amount: number) => formatMoney(amount, s.params.currency, lang)
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
       <table className="w-full text-left text-sm">
         <thead className="bg-slate-50 text-xs text-slate-500">
           <tr>
             <th className="px-3 py-2">{t('compare.col.name')}</th>
+            <th className="px-3 py-2 text-right">{t('compare.col.spending')}</th>
+            <th className="px-3 py-2 text-right">{t('compare.col.pension')}</th>
             <th className="px-3 py-2">{t('compare.col.verdict')}</th>
             <th className="px-3 py-2">{t('compare.col.retire')}</th>
             <th className="px-3 py-2">{t('compare.col.earliest')}</th>
@@ -31,6 +34,8 @@ export function ComparisonTable({ scenarios }: { scenarios: Scenario[] }) {
                   <span className="mr-2 inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: s.color }} />
                   {s.name}
                 </td>
+                <td className="px-3 py-2 text-right">{money(s, s.params.monthlyWithdrawal)}</td>
+                <td className="px-3 py-2 text-right">{money(s, s.params.monthlyPension)}</td>
                 <td className="px-3 py-2">
                   <span className={`mr-1.5 inline-block h-2 w-2 rounded-full ${VERDICT_STYLE[sum.verdict].dot}`} />
                   {t(`verdictLabel.${sum.verdict}`)}
@@ -39,7 +44,7 @@ export function ComparisonTable({ scenarios }: { scenarios: Scenario[] }) {
                 <td className="px-3 py-2">{earliest === null ? '—' : age(s, earliest)}</td>
                 <td className="px-3 py-2">{sum.depletionMonth === null ? '—' : age(s, sum.depletionMonth)}</td>
                 <td className="px-3 py-2 text-right">
-                  {sum.balanceAtTarget ? formatMoney(sum.balanceAtTarget.real, s.params.currency, lang) : '—'}
+                  {sum.balanceAtTarget ? money(s, sum.balanceAtTarget.real) : '—'}
                 </td>
               </tr>
             )

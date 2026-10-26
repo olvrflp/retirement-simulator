@@ -1,5 +1,6 @@
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { formatMoney } from '../../format/format'
 import { currentStartMonth } from '../../state/defaults'
 import { initialState, reducer, type Action, type AppState } from '../../state/reducer'
 import { saveState } from '../../state/storage'
@@ -52,6 +53,27 @@ describe('CompareTab', () => {
     seed(saveAs('Pesos'), { type: 'setCurrency', currency: 'USD' }, saveAs('Dollars'))
     renderWithState(<CompareTab />)
     expect(screen.getByText(/Hidden \(different currency\): Dollars/)).toBeInTheDocument()
+  })
+
+  it("shows each scenario's monthly spending and pension in today's money", () => {
+    const s = seed(
+      { type: 'setParam', key: 'monthlyWithdrawal', value: 2_000 },
+      { type: 'setParam', key: 'monthlyPension', value: 700 },
+      saveAs('Plan A'),
+      { type: 'setParam', key: 'monthlyWithdrawal', value: 3_500 },
+      { type: 'setParam', key: 'monthlyPension', value: 900 },
+      saveAs('Plan B'),
+    )
+    renderWithState(<CompareTab />)
+    const money = (n: number) => formatMoney(n, s.params.currency, 'en')
+    const header = within(screen.getByRole('table')).getAllByRole('columnheader').map((h) => h.textContent)
+    const spendingCol = header.indexOf('Monthly spending (today)')
+    const pensionCol = header.indexOf('Monthly pension (today)')
+    const cell = (row: number, col: number) => within(rows()[row]).getAllByRole('cell')[col].textContent
+    expect(cell(0, spendingCol)).toBe(money(2_000))
+    expect(cell(0, pensionCol)).toBe(money(700))
+    expect(cell(1, spendingCol)).toBe(money(3_500))
+    expect(cell(1, pensionCol)).toBe(money(900))
   })
 
   it('loads a scenario back into configuration', async () => {
