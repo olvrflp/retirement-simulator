@@ -33,3 +33,19 @@ export const gapExample: Params = {
 
 // Monthly rate of exactly 1 %.
 export const ONE_PCT_MONTHLY_EA = 12.682503013196976
+
+// Plausible USD plan where an earliest retirement exists before the pension age.
+export const realistic: Params = {
+  ...base,
+  startingCapital: 20_000,
+  monthlyWithdrawal: 1_000,
+  inflationPct: 5,
+  p1Years: 15,
+  p1ReturnPct: 8,
+  monthlySavings: 1_500,
+  p2Years: 5,
+  p2ReturnPct: 7,
+  p3ReturnPct: 6,
+  pensionAge: 62,
+  monthlyPension: 600,
+}
