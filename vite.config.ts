@@ -7,6 +7,8 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   base: './',
   plugins: [react(), tailwindcss()],
+  // Recharts dominates the single bundle (~185 kB gzipped); acceptable for a static app.
+  build: { chunkSizeWarningLimit: 700 },
   test: {
     environment: 'jsdom',
     globals: true,
