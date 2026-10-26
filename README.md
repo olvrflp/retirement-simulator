@@ -26,7 +26,7 @@ npm run build    # static bundle in dist/
 npm run preview  # serve the built bundle
 ```
 
-Live at **https://olvrflp.github.io/Investing-simulator/**. Every push to `main` runs the tests and redeploys through GitHub Actions (`.github/workflows/deploy.yml`).
+Live at **https://olvrflp.github.io/retirement-simulator/**. Every push to `main` runs the tests and redeploys through GitHub Actions (`.github/workflows/deploy.yml`).
 
 `dist/` uses relative asset paths. Serve it from any static host or CDN (GitHub Pages, Vercel, S3…) or open it with `npm run preview`.
 
