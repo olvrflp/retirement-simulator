@@ -190,7 +190,7 @@ Simulation semantics (spec §7):
   - pension `Pen_m = Pen0·f_m`
   - savings `S_m = savingsGrowWithInflation ? S·f_m : S`
 - Balance update by phase:
-  - Phase 1: `B = (B + S_m)·(1+i1)`
+  - Phase 1: `B = B·(1+i1) + S_m`. The contribution lands at the end of the month, after growth (spec §7).
   - Phases 2–3: request `W_m`
   - Phase 4: request `max(0, W_m − Pen_m)`
 - Paying a request: `paid = min(request, B)`, `unmet = request − paid`, then `B = (B − paid)·(1+i)`, where `i` is the phase's rate (phase 4 uses r3).
@@ -218,7 +218,7 @@ Simulation semantics (spec §7):
     - `traj[37].unmet === 0 && traj[37].netWithdrawal === 0`
     - `firstUnmetMonth(params) === 34`
   - `'withdraw then grow'`: `p1Years 0, p2ReturnPct 12.682503013196976, startingCapital 1000, monthlyWithdrawal 100` → `traj[1].balance` ≈ 909 (1e-9).
-  - `'phase 1 compounds contributions'`: `p1ReturnPct 12.682503013196976, startingCapital 0, monthlySavings 100` → `traj[1].balance` ≈ 101 and `traj[2].balance` ≈ 203.01.
+  - `'phase 1 compounds contributions'`: `p1ReturnPct 12.682503013196976, startingCapital 0, monthlySavings 100` → `traj[1].balance` ≈ 100 and `traj[2].balance` ≈ 201 (end-of-month contributions).
   - `'withdrawals inflate from today'`: `inflationPct 12.682503013196976, p1Years 1, monthlyWithdrawal 100` → `traj[13].withdrawal` ≈ 112.6825030 (1e-6). Also `traj[13].balanceReal` ≈ `traj[13].balance / 1.01**13`.
   - `'pension offsets spending'`: in phase 4 with `monthlyWithdrawal 100, monthlyPension 60` and 0 inflation, `netWithdrawal === 40`.
   - `'pension surplus is not saved'`: with `monthlyPension 150 > monthlyWithdrawal 100`, the phase-4 balance after one month equals the previous balance × (1+i3).
@@ -424,6 +424,8 @@ Required keys and exact EN copy (verdicts from spec §8; ES translations are the
 - `disclaimer`: the copy from Global Constraints
 - `scenario.defaultName`: "Scenario {n}"
 - `rate.suffix`: EN "% effective annual", ES "% EA"
+- `hint.nominalReturn`: "Nominal return after fees and taxes. Don't subtract inflation, the simulator applies it separately." Shown under every return field.
+- `hint.volatileReturn`: "Use a conservative rate: volatile investments perform worse than their average while you're withdrawing." Shown under the Phase 3 return field.
 - one key per field label, card title, tab, metric, validation issue code (`issue.<code>`), chart toggle, comparison empty state, mixed-currency note (`compare.hiddenCurrency`: "Hidden (different currency): {names}"), storage warning, and delete confirmation
 
 - [ ] **Step 1: Write failing tests**:
@@ -544,7 +546,7 @@ Storage rules:
 ```ts
 export function parseLocaleNumber(text: string): number; // '' → NaN; accepts ',' or '.' decimal; strips spaces/thousands dots only when a comma decimal is present
 export function ParamField(props: { id: string; label: string; value: number; onChange: (v: number) => void;
-  min: number; max: number; step: number; suffix?: string; error?: string }): JSX.Element;
+  min: number; max: number; step: number; suffix?: string; hint?: string; error?: string }): JSX.Element;
 export function GlobalCard(): JSX.Element; export function Phase1Card(): JSX.Element; export function Phase2Card(): JSX.Element;
 export function Phase3Card(): JSX.Element; export function Phase4Card(): JSX.Element;
 export function SaveScenarioBar(): JSX.Element;
@@ -579,6 +581,7 @@ The cards dispatch `setParam`. Field groups follow spec §6.
 
 - Phase 3 card shows the derived duration via `formatAge(phaseBounds(params).p3, lang)` (read-only), or the `issue.phase3Negative` text.
 - Phase 1 card has the `savingsGrowWithInflation` checkbox.
+- Every return field passes `hint={t('hint.nominalReturn')}`. The Phase 3 return field additionally shows `t('hint.volatileReturn')`.
 - Each field's `error` comes from `useActiveResult().issues` for that field, mapped through `t('issue.' + code)`.
 
 `SaveScenarioBar`:

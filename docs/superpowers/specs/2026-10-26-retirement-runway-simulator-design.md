@@ -109,8 +109,9 @@ Phase 4 uses the Phase 3 return rate (per brief).
 - Pension in month t: `Pen_t = Pen0 · infl_t`. **[my call]**
 - Savings in month t: `S` flat, or `S · infl_t` if the toggle is on.
 
-### Per-month update (order of operations follows the brief: cash flow at the start of the month, then growth)
-- Phase 1: `B_t = (B_{t−1} + S_t) · (1 + i_m1)`. No withdrawals.
+### Per-month update
+Withdrawals come out at the start of the month and then the balance grows. Contributions arrive at the end of the month, after growth.
+- Phase 1: `B_t = B_{t−1} · (1 + i_m1) + S_t`. No withdrawals. **[decided]** This changes the brief's `(B + S)·(1+i)`. The owner approved end-of-month contributions because they match salary timing and are slightly conservative.
 - Phase 2: `B_t = (B_{t−1} − W_t) · (1 + i_m2)`.
 - Phase 3: `B_t = (B_{t−1} − W_t) · (1 + i_m3)`.
 - Phase 4: `net_t = max(0, W_t − Pen_t)`; `B_t = (B_{t−1} − net_t) · (1 + i_m3)`. Any pension surplus over spending is **not** added to the balance (per brief's `max(0, …)`).
@@ -232,6 +233,8 @@ Duplicate names are allowed (identity is the id).
 - All UI strings come from a translation dictionary; no hard-coded copy in components. Library choice **[builder]** (a small in-house dictionary is fine).
 - Currency selector: COP, USD, EUR, MXN at least **[my call]**; formatting only, no conversion. Default COP. Use `Intl.NumberFormat` with the UI locale; compact notation (e.g. "$412 M") on chart axes. **[builder]** exact formatting.
 - Rate labels use "% EA" in Spanish and "% effective annual" in English. **[my call]**
+- Every return field is labelled and hinted as a **nominal return after fees and taxes**, because inflation is applied separately. Entering a real (inflation-adjusted) return would count inflation twice, and entering a pre-tax return overstates growth. **[decided]**
+- The Phase 3 return field carries the hint "Use a conservative rate: volatile investments perform worse than their average while you're withdrawing (sequence-of-returns risk)." **[decided]** This is the v1 stand-in for Monte Carlo.
 
 ## 13. Testing
 
