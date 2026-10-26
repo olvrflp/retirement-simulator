@@ -36,6 +36,8 @@ export function AppStateProvider({ children, lang }: { children: ReactNode; lang
   const initial = useRef(state)
   useEffect(() => {
     if (state === initial.current) return
+    // The write result comes from an external system, so the warning can only be set here.
+    // oxlint-disable-next-line react/set-state-in-effect
     if (!saveState(safeLocalStorage(), state)) setStorageWarning(true)
   }, [state])
 
