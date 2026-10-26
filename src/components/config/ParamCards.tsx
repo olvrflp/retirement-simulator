@@ -109,6 +109,7 @@ export function Phase3Card() {
   const { state } = useAppState()
   const { issues } = useActiveResult()
   const p3Issue = issues.find((i) => i.field === 'phase3')
+  const p3 = phaseBounds(state.params).p3
   return (
     <Card title={t('card.p3')} desc={t('card.p3.desc')}>
       <Field field="p3ReturnPct" kind="rate" hint={`${t('hint.nominalReturn')} ${t('hint.volatileReturn')}`} />
@@ -119,7 +120,7 @@ export function Phase3Card() {
             {t('issue.phase3Negative')}
           </span>
         ) : (
-          <span className="tabular-nums text-slate-900">{formatAge(phaseBounds(state.params).p3, lang)}</span>
+          <span className="tabular-nums text-slate-900">{Number.isFinite(p3) && p3 >= 0 ? formatAge(p3, lang) : '—'}</span>
         )}
       </div>
     </Card>

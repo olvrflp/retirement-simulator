@@ -37,12 +37,12 @@ describe('storage', () => {
     expect(loaded.scenarios[0].params.startMonth).toBe('2026-10')
   })
 
-  it('recomputes scenarios from an older engine version', () => {
+  it('recomputes results from stored params, ignoring any cached result', () => {
     const st = new MemoryStorage()
     saveState(st, withScenario())
     const raw = JSON.parse(st.getItem(STORAGE_KEY)!)
     raw.scenarios[0].engineVersion = 0
-    raw.scenarios[0].result.trajectory[0].balance = -42
+    raw.scenarios[0].result = { trajectory: [{ balance: -42 }] }
     st.setItem(STORAGE_KEY, JSON.stringify(raw))
     const loaded = loadState(st, 'en', '2026-10')
     expect(loaded.scenarios[0].result.trajectory[0].balance).toBe(loaded.scenarios[0].params.startingCapital)

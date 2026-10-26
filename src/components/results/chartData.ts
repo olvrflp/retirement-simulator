@@ -6,7 +6,7 @@ export interface ChartSeries {
   name: string
   color: string
   startMonth: string
-  points: { age: number; value: number; k: number }[]
+  points: { age: number; value: number; k: number; startMonth: string }[]
 }
 
 export interface Marker {
@@ -27,7 +27,12 @@ export function toChartSeries(
     name,
     color,
     startMonth,
-    points: result.trajectory.map((p) => ({ age: p.age, k: p.k, value: mode === 'real' ? p.balanceReal : p.balance })),
+    points: result.trajectory.map((p) => ({
+      age: p.age,
+      k: p.k,
+      startMonth,
+      value: mode === 'real' ? p.balanceReal : p.balance,
+    })),
   }
 }
 

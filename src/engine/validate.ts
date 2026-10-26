@@ -52,6 +52,9 @@ export function validateParams(p: Params): ValidationIssue[] {
     if (agesKnown && p.pensionAge <= p.currentAge) issues.push({ field: 'pensionAge', code: 'pensionNotAfterCurrent' })
     if (p.pensionAge > HORIZON_AGE) issues.push({ field: 'pensionAge', code: 'ageAboveHorizon' })
   }
-  if (issues.length === 0 && phaseBounds(p).p3 < 0) issues.push({ field: 'phase3', code: 'phase3Negative' })
+  const p3Inputs: NumericField[] = ['currentAge', 'p1Years', 'p2Years', 'pensionAge']
+  if (p3Inputs.every((f) => !missing.has(f)) && phaseBounds(p).p3 < 0) {
+    issues.push({ field: 'phase3', code: 'phase3Negative' })
+  }
   return issues
 }

@@ -37,6 +37,7 @@ export type Action =
   | { type: 'setLanguage'; language: Lang }
   | { type: 'setChartMode'; mode: ChartMode }
   | { type: 'setTab'; tab: Tab }
+  | { type: 'syncScenarios'; scenarios: Scenario[]; selectedIds: string[]; nextColorIndex: number }
 
 export function initialState(lang: Lang, startMonth: string): AppState {
   return {
@@ -102,5 +103,7 @@ export function reducer(s: AppState, a: Action): AppState {
       return { ...s, chartMode: a.mode }
     case 'setTab':
       return { ...s, activeTab: a.tab }
+    case 'syncScenarios':
+      return { ...s, scenarios: a.scenarios, selectedIds: a.selectedIds, nextColorIndex: a.nextColorIndex }
   }
 }

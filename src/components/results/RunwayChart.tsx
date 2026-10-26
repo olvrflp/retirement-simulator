@@ -29,21 +29,18 @@ interface Props {
 
 export function RunwayChart({ series, markers, targetAges, currency, lang, mode, onModeChange }: Props) {
   const t = useT()
-  const byName = new Map(series.map((s) => [s.name, s]))
-
   const renderTooltip = ({ active, label, payload }: TooltipContentProps) => {
     if (!active || !payload?.length || typeof label !== 'number') return null
     const first = payload[0]
-    const start = first.name !== undefined ? byName.get(String(first.name))?.startMonth : undefined
-    const k = (first.payload as { k?: number } | undefined)?.k
+    const point = first.payload as { k?: number; startMonth?: string } | undefined
     return (
       <div className="rounded-md border border-slate-200 bg-white p-2 text-xs shadow">
         <div className="font-medium">
           {formatAge(label * 12, lang)}
-          {start && k !== undefined ? ` · ${formatMonthYear(start, k, lang)}` : ''}
+          {point?.startMonth && point.k !== undefined ? ` · ${formatMonthYear(point.startMonth, point.k, lang)}` : ''}
         </div>
-        {payload.map((e) => (
-          <div key={String(e.name)} style={{ color: e.color }} className="tabular-nums">
+        {payload.map((e, i) => (
+          <div key={i} style={{ color: e.color }} className="tabular-nums">
             {series.length > 1 ? `${e.name}: ` : ''}
             {formatMoney(Number(e.value ?? 0), currency, lang)}
           </div>

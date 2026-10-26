@@ -1,4 +1,4 @@
-import { monthlyRate } from './rates'
+import { monthlyRate, toMonths } from './rates'
 import { phaseBounds, phaseOfMonth, type PhaseBounds } from './timeline'
 import type { Params, Phase, TrajectoryPoint } from './types'
 
@@ -53,10 +53,11 @@ function step(p: Params, b: PhaseBounds, r: Rates, m: number, balance: number): 
 export function simulate(params: Params, p1MonthsOverride?: number): TrajectoryPoint[] {
   const b = phaseBounds(params, p1MonthsOverride)
   const r = ratesOf(params)
+  const age0 = toMonths(params.currentAge)
   const traj: TrajectoryPoint[] = [
     {
       k: 0,
-      age: params.currentAge,
+      age: age0 / 12,
       phase: phaseOfMonth(0, b),
       balance: params.startingCapital,
       balanceReal: params.startingCapital,
@@ -72,7 +73,7 @@ export function simulate(params: Params, p1MonthsOverride?: number): TrajectoryP
     balance = s.balance
     traj.push({
       k,
-      age: params.currentAge + k / 12,
+      age: (age0 + k) / 12, // whole months, so equal ages compare equal across scenarios
       phase: s.phase,
       balance,
       balanceReal: balance / Math.pow(1 + r.inf, k),

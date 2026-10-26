@@ -4,10 +4,16 @@ import type { Lang } from '../format/currency'
 import { I18nProvider } from '../i18n/I18nContext'
 import { currentStartMonth } from './defaults'
 import { reducer, type Action, type AppState } from './reducer'
-import { loadState, saveState } from './storage'
+import { loadState, saveState, STORAGE_KEY } from './storage'
+
+interface ActiveResult {
+  issues: ValidationIssue[]
+  result: ScenarioResult | null
+}
 
 interface Ctx {
   state: AppState
+  active: ActiveResult
   dispatch: Dispatch<Action>
   storageWarning: boolean
   dismissStorageWarning: () => void
@@ -41,9 +47,26 @@ export function AppStateProvider({ children, lang }: { children: ReactNode; lang
     if (!saveState(safeLocalStorage(), state)) setStorageWarning(true)
   }, [state])
 
+  // Another tab saved or deleted scenarios: adopt its list so our next write doesn't erase them.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY && e.key !== null) return
+      const s = loadState(safeLocalStorage(), 'en', currentStartMonth())
+      dispatch({ type: 'syncScenarios', scenarios: s.scenarios, selectedIds: s.selectedIds, nextColorIndex: s.nextColorIndex })
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
+  // Computed once here so every consumer shares one engine + solver run per change.
+  const active = useMemo<ActiveResult>(() => {
+    const issues = validateParams(state.params)
+    return { issues, result: issues.length ? null : runScenario(state.params) }
+  }, [state.params])
+
   const value = useMemo(
-    () => ({ state, dispatch, storageWarning, dismissStorageWarning: () => setStorageWarning(false) }),
-    [state, storageWarning],
+    () => ({ state, active, dispatch, storageWarning, dismissStorageWarning: () => setStorageWarning(false) }),
+    [state, active, storageWarning],
   )
   return (
     <AppStateContext.Provider value={value}>
@@ -58,10 +81,6 @@ export function useAppState(): Ctx {
   return ctx
 }
 
-export function useActiveResult(): { issues: ValidationIssue[]; result: ScenarioResult | null } {
-  const { params } = useAppState().state
-  return useMemo(() => {
-    const issues = validateParams(params)
-    return { issues, result: issues.length ? null : runScenario(params) }
-  }, [params])
+export function useActiveResult(): ActiveResult {
+  return useAppState().active
 }
