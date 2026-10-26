@@ -32,3 +32,19 @@ export interface TrajectoryPoint {
   netWithdrawal: number // amount requested from the balance this month
   unmet: number // requested − paid
 }
+
+export type VerdictKind = 'short' | 'gap' | 'thin' | 'lasts' | 'never'
+
+export interface Summary {
+  verdict: VerdictKind
+  retirementMonth: number
+  pensionMonth: number
+  horizonMonth: number
+  targetMonth: number
+  slackMonth: number
+  depletionMonth: number | null // first month with unmet spending
+  runwayMonths: number // (depletionMonth ?? horizonMonth) − retirementMonth
+  balanceAtTarget: { nominal: number; real: number } | null
+  deficitAtTargetReal: number // unmet spending before the target, in today's money
+  gapShortfallReal: number // unmet spending before the pension, in today's money
+}
